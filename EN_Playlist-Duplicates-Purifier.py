@@ -9,8 +9,8 @@ import string
 
 def process_chunk(args):
     """
-    Traite un groupe de comparaisons de pistes.
-    Cette fonction est appelée par chaque processus dans le pool de processus.
+    Processes a group of track comparisons.
+    This function is called by each process in the process pool.
     """
     chunk, confirmed_threshold, suspected_threshold = args
     local_confirmed = defaultdict(list)
@@ -19,23 +19,23 @@ def process_chunk(args):
     for track, compare_track in chunk:
         track_isrc = track.get("isrc")
         compare_isrc = compare_track.get("isrc")
-
-        # Vérification ISRC
+ 
+        # ISRC verification
         if track_isrc and compare_isrc and track_isrc == compare_isrc:
             local_confirmed[track_isrc].append((track, compare_track))
             continue
 
-        # Vérification similarité
+        # Similarity check
         track_name = track['name'].strip()
         compare_name = compare_track['name'].strip()
 
-        # Ignorer les titres trop courts ou composés uniquement de caractères spéciaux, sauf s'ils sont exactement identiques
+        # Ignore titles that are too short or made up entirely of special characters, unless they are exactly the same
         if (len(track_name) < 3 or len(compare_name) < 3 or all(c in string.punctuation for c in track_name) or all(c in string.punctuation for c in compare_name)) and track_name != compare_name:
             continue
 
         name_similarity = fuzz.token_sort_ratio(track_name, compare_name)
 
-        # Ignorer les titres avec une similarité inférieure au seuil
+        # Ignore titles with a similarity below the threshold
         if name_similarity < suspected_threshold:
             continue
 
@@ -43,7 +43,7 @@ def process_chunk(args):
         compare_artist = compare_track['artist'].strip().lower()
         artist_similarity = fuzz.token_sort_ratio(track_artist, compare_artist)
 
-        # Ignorer les artistes avec une similarité inférieure au seuil
+        # Ignore artists with similarity below threshold
         if artist_similarity < 85:
             continue
 
@@ -54,36 +54,36 @@ def process_chunk(args):
     return local_confirmed, local_suspected
 
 def chunked_combinations(iterable, chunk_size=1000):
-    """Divise les combinaisons en groupes pour le traitement parallèle"""
+    """Divides combinations into groups for parallel processing"""
     all_combos = list(combinations(iterable, 2))
     for i in range(0, len(all_combos), chunk_size):
         yield all_combos[i:i + chunk_size]
 
 def write_results(output_file_path, confirmed_duplicates, suspected_duplicates):
-    """Écrit les résultats dans un fichier avec le nouveau format"""
+    """Writes results to a file in the new format"""
     with open(output_file_path, 'w', encoding='utf-8') as output_file:
         # En-tête et disclaimer général
-        output_file.write('=== Résultats de la Détection des Doublons ===\n\n')
+        output_file.write('=== Duplicate Detection Results ===\n\n')
 
         # Section des doublons confirmés avec disclaimer
-        output_file.write('Doublons Confirmés par ISRC:\n')
-        output_file.write('!!! Bien que les titres soient différents, les deux morceaux partagent le même numéro ISRC.\n')
-        output_file.write('! L\'ISRC (International Standard Recording Code) est un identifiant unique pour chaque enregistrement audio. ')
-        output_file.write('Il aide à repérer et éliminer les doublons exacts dans les playlists, car chaque version officielle d\'une chanson possède un code distinct.\n\n')
+        output_file.write('ISRC Confirmed Doubles:\n')
+        output_file.write('!!! Although the titles are different, both tracks share the same ISRC number.\n')
+        output_file.write('! The ISRC (International Standard Recording Code) is a unique identifier for each audio recording. ')
+        output_file.write('It helps to spot and eliminate exact duplicates in playlists, as each official version of a song has a distinct code\n\n')
 
         # Liste des doublons confirmés
         for isrc, instances in confirmed_duplicates.items():
             for track, compare_track in instances:
-                output_file.write(f'Titre 1: {track["name"]} | Artiste 1: {track["artist"]} | Album 1: {track["album_name"]}\n')
-                output_file.write(f'Titre 2: {compare_track["name"]} | Artiste 2: {compare_track["artist"]} | Album 2: {compare_track["album_name"]}\n\n')
+                output_file.write(f'Title 1: {track["name"]} | Artist 1: {track["artist"]} | Album 1: {track["album_name"]}\n')
+                output_file.write(f'Title 2: {compare_track["name"]} | Artist 2: {compare_track["artist"]} | Album 2: {compare_track["album_name"]}\n\n')
 
         # Section des doublons potentiels
-        output_file.write('Potentiels Doublons:\n\n')
-        output_file.write('!!! Attention : Il est possible que ces doublons potentiels ne soient pas réellement des doublons. ')
-        output_file.write('Pour être sûr à 100%, il est recommandé de vérifier manuellement chaque paire de doublons potentiels.\n\n')
+        output_file.write('Potentials Duplicates:\n\n')
+        output_file.write('!!! Please note: These potential duplicates may not actually be duplicates. ')
+        output_file.write('To be 100%, sure we recommend manually checking each pair of potential duplicates.\n\n')
         for track, compare_track, name_similarity, artist_similarity, album_similarity in suspected_duplicates:
-            output_file.write(f'Titre 1: {track["name"]} | Artiste 1: {track["artist"]} | Album 1: {track["album_name"]}\n')
-            output_file.write(f'Titre 2: {compare_track["name"]} | Artiste 2: {compare_track["artist"]} | Album 2: {compare_track["album_name"]} '
+            output_file.write(f'Title 1: {track["name"]} | Artist 1: {track["artist"]} | Album 1: {track["album_name"]}\n')
+            output_file.write(f'Title 2: {compare_track["name"]} | Artist 2: {compare_track["artist"]} | Album 2: {compare_track["album_name"]} '
                             f'(Similitude: {name_similarity}%, Artiste Similarité: {artist_similarity}%, Album Similarité: {album_similarity}%)\n\n')
 
 
