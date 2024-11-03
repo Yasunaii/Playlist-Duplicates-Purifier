@@ -132,8 +132,8 @@ def find_duplicates(json_file_path, output_file_path, confirmed_threshold=85, su
     return confirmed_duplicates, suspected_duplicates
 
 if __name__ == "__main__":
-    json_file_path = 'C:\\Users\\sammy\\Downloads\\test\\Apple_Poat.json'
-    output_file_path = 'C:\\Users\\sammy\\Downloads\\test\\Duplicates_List.txt'
+    json_file_path = 'C:\\Users\\VotreNom\\VosDossiers\\VosDossiers\\NomDeVotrePlaylist.json'
+    output_file_path = 'C:\\Users\\VotreNom\\VosDossiers\\VosDossiers\\Duplicates_List.txt' # Sortie des résultat
 
     try:
         find_duplicates(json_file_path, output_file_path)

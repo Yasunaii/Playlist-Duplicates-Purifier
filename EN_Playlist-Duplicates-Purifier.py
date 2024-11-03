@@ -88,56 +88,56 @@ def write_results(output_file_path, confirmed_duplicates, suspected_duplicates):
 
 
 def find_duplicates(json_file_path, output_file_path, confirmed_threshold=85, suspected_threshold=90, chunk_size=1000):
-    """Fonction principale de détection des doublons"""
-    print("Chargement du fichier JSON...")
+    """Main duplicate detection function"""
+    print("loading JSON file...")
     with open(json_file_path, 'r', encoding='utf-8') as file:
         data = json.load(file)
     tracks = data['tracks']
 
-    print(f"Nombre total de pistes : {len(tracks)}")
+    print(f"Total number of tracks : {len(tracks)}")
 
-    # Préparation des chunks pour le traitement parallèle
+    # Preparing chunks for parallel processing
     chunks = list(chunked_combinations(tracks, chunk_size))
     total_chunks = len(chunks)
 
-    print(f"Démarrage de l'analyse des doublons...")
+    print(f"Start duplicate analysis...")
 
-    # Initialisation des résultats
+    # Initializing results
     confirmed_duplicates = defaultdict(list)
     suspected_duplicates = []
 
-    # Préparation des arguments pour le processing
+    # Preparing arguments for processing
     chunk_args = [(chunk, confirmed_threshold, suspected_threshold) for chunk in chunks]
 
-    # Utilisation du Pool de processus avec tqdm
+    # Using the Process Pool with tqdm
     with mp.Pool(processes=mp.cpu_count()) as pool:
         results = []
         for result in tqdm(pool.imap_unordered(process_chunk, chunk_args),
                           total=total_chunks,
-                          desc="Analyse des pistes"):
+                          desc="track analysis"):
             local_confirmed, local_suspected = result
-            # Mise à jour des résultats
+            # Results update
             for isrc, dupes in local_confirmed.items():
                 confirmed_duplicates[isrc].extend(dupes)
             suspected_duplicates.extend(local_suspected)
 
-    print("\nÉcriture des résultats...")
+    print("\nWriting results...")
     write_results(output_file_path, confirmed_duplicates, suspected_duplicates)
 
-    # Affichage des statistiques finales
-    print(f"\nAnalyse terminée :")
-    print(f"- Nombre de doublons confirmés : {sum(len(dupes) for dupes in confirmed_duplicates.values())}")
-    print(f"- Nombre de doublons potentiels : {len(suspected_duplicates)}")
+    # Displaying final statistics
+    print(f"\nAnalysis complete :")
+    print(f"- Number of confirmed duplicates : {sum(len(dupes) for dupes in confirmed_duplicates.values())}")
+    print(f"- Number of potential duplicates : {len(suspected_duplicates)}")
 
     return confirmed_duplicates, suspected_duplicates
 
 if __name__ == "__main__":
-    json_file_path = 'C:\\Users\\sammy\\Downloads\\test\\Apple_Poat.json'
-    output_file_path = 'C:\\Users\\sammy\\Downloads\\test\\Duplicates_List.txt'
+    json_file_path = 'C:\\Users\\UsersName\\UrFolders\\UrFolders\\Playlist_Name.json'
+    output_file_path = 'C:\\Users\\UsersName\\UrFolders\\UrFolders\\Duplicates_List.txt' # Output
 
     try:
         find_duplicates(json_file_path, output_file_path)
     except KeyboardInterrupt:
-        print("\nInterruption manuelle du script.")
+        print("\nManual script interruption.")
     except Exception as e:
-        print(f"\nUne erreur s'est produite : {str(e)}")
+        print(f"\nAn error has occurred: {str(e)}")
