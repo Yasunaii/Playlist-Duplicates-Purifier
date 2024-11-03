@@ -73,6 +73,12 @@ To execute the script, follow these steps:
 
    ```bash
    python Playlist-Duplicates-Purifier.py
+   ```
+
+## Uninstalling
+At the end of the process, you'll probably want to uninstall the following items: 
+1. Uninstall python and Visual studio code from Windows settings like all other applications
+If you uninstall in this way, the packages installed by pressing “pip install” will also be uninstalled.
 
 </details>
 
@@ -141,9 +147,14 @@ Pour exécuter le script, procédez comme suit :
 1. Vérifiez que VS Code utilise l'environnement virtuel (vérifiez le coin inférieur gauche de la fenêtre VS Code).
 2. Ouvrez un nouveau terminal dans VS Code s'il n'y en a pas déjà un.
 3. Exécutez le script en utilisant la commande suivante :
-   ``bash
+   ```bash
    python Playlist-Duplicates-Purifier.py
+   ```
 
+## Désintallation
+A la fin du processus vous aurez surement envie de désintaller les éléments : 
+1. Désintaller python et Visual studio code a partir des paramètre windows comme toutes les autres applications
+Si vous désintaller de cette façon les packages installé en faisans "pip install" se désintalleront également.
 
 
 
